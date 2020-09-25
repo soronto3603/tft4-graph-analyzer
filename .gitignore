@@ -1,0 +1,5 @@
+.envrc
+.env-cmdrc.js
+node_modules
+.nuxt
+.serverless

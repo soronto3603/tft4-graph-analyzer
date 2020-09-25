@@ -1,0 +1,39 @@
+{
+  "name": "tft4-graph-analyzer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "d3": "^6.1.1",
+    "eventemitter3": "^4.0.7",
+    "nuxt": "^2.14.5",
+    "serverless-nuxt": "^1.1.1",
+    "vue-class-component": "^7.2.6",
+    "nuxt-start": "^2.14.6",
+    "vue-property-decorator": "^9.0.0"
+  },
+  "devDependencies": {
+    "postcss": "^8.0.5",
+    "postcss-hexrgba": "^2.0.1",
+    "postcss-nested": "^4.0.0",
+    "postcss-responsive-type": "^1.0.0",
+    "@nuxt/typescript-build": "^2.0.3",
+    "@types/d3": "^5.7.2",
+    "env-cmd": "^10.1.0",
+    "serverless": "^2.2.0",
+    "serverless-apigw-binary": "^0.4.4",
+    "serverless-domain-manager": "^5.0.0",
+    "serverless-nuxt-plugin": "^1.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "post-update": "yarn upgrade --latest",
+    "deploy": "env-cmd -e prod sls deploy --stage prod"
+  },
+  "author": "",
+  "license": "ISC"
+}
