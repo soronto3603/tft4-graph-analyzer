@@ -3,3 +3,4 @@
 node_modules
 .nuxt
 .serverless
+.DS_Store
