@@ -73,7 +73,7 @@
 </template>
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import { NetworkGraph, Edge } from './native/force-directed-graph'
+import { NetworkGraph, Edge } from '../native/force-directed-graph'
 import { champions } from './data/champions'
 import { traits } from './data/traits'
 import { unique, flatten } from '../utils/array'

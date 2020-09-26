@@ -16,7 +16,7 @@ import d3, {
   contourDensity,
 } from 'd3'
 import EventEmitter from 'eventemitter3'
-import { unique, flatten } from '../../utils/array'
+import { unique, flatten } from '../utils/array'
 
 const PI_2 = Math.PI * 2
 const ZOOM_MAX = 2
@@ -36,9 +36,8 @@ function drawEdge(ctx: CanvasRenderingContext2D, source: Point, target: Point, c
     const x = Math.min(source.x, target.x) + Math.abs(source.x - target.x) / 2
     const y = Math.min(source.y, target.y) + Math.abs(source.y - target.y) / 4
 
-    // const degree = Math.atan2(source.y - target.y, source.x - target.x )
     ctx.translate(x, y)
-    ctx.rotate(Math.PI / 2)
+    ctx.rotate(Math.atan2(source.y - target.y, source.x - target.x ))
     ctx.textAlign = 'center'
     ctx.fillText(label, 0, 12)
     // ctx.fillText(label, , )
@@ -279,12 +278,14 @@ export class NetworkGraph extends EventEmitter {
         const source = (link.source as Node)
         const target = (link.target as Node)
 
-        let alpha = .1
+        let alpha = .05
         if (emphasizedNodes.length === 1) {
-          alpha = emphasizedNodes.find(node => node === source) || emphasizedNodes.find(node => node === target) ? 0.5 : 0.1
-        } else if (emphasizedNodes.length > 2) {
-          alpha = emphasizedNodes.find(node => node === source) && emphasizedNodes.find(node => node === target) ? 0.5 : 0.1
+          alpha = emphasizedNodes.find(node => node === source) || emphasizedNodes.find(node => node === target) ? 0.5 : .05
+        } else if (emphasizedNodes.length >= 2) {
+          alpha = emphasizedNodes.find(node => node === source) && emphasizedNodes.find(node => node === target) ? 0.5 : .05
         }
+
+        const isEmphasizeNode = !!(emphasizedNodes.find(node => node === source) || emphasizedNodes.find(node => node === source))
 
         const traits = Object.entries(
           [
@@ -311,7 +312,7 @@ export class NetworkGraph extends EventEmitter {
             },
             'black',
             alpha,
-            traits[0],
+            isEmphasizeNode ? traits[0] : '',
           )
         } else if (traits.length === 2) {
           drawEdge(
@@ -326,7 +327,7 @@ export class NetworkGraph extends EventEmitter {
             },
             'black',
             alpha,
-            traits[0],
+            isEmphasizeNode ? traits[0] : '',
           )
           drawEdge(
             $ctx,
@@ -340,7 +341,7 @@ export class NetworkGraph extends EventEmitter {
             },
             'black',
             alpha,
-            traits[1],
+            isEmphasizeNode ? traits[1] : '',
           )
         }
       }
@@ -362,13 +363,13 @@ export class NetworkGraph extends EventEmitter {
           if (emphasizedNodes.find(_node => _node === node) || relativeNodes.find(_node => _node === node)) {
             drawHexagonImage($ctx, node, HEXAGON_SIZE, 1)
           } else {
-            drawHexagonImage($ctx, node, HEXAGON_SIZE, 0.3)
+            drawHexagonImage($ctx, node, HEXAGON_SIZE, 0.05)
           }
         } else if (emphasizedNodes.length > 1) {
           if (emphasizedNodes.find(_node => _node === node)) {
             drawHexagonImage($ctx, node, HEXAGON_SIZE, 1)
           } else {
-            drawHexagonImage($ctx, node, HEXAGON_SIZE, 0.3)
+            drawHexagonImage($ctx, node, HEXAGON_SIZE, 0.005)
           }
         }
       } else {
