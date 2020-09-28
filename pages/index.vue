@@ -47,6 +47,19 @@
       }
     }
   }
+  
+  .modal {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .shell {
     position: fixed;
@@ -79,6 +92,9 @@
 </style>
 <template>
   <div class="container">
+    <div class="modal" v-if="isLoading">
+      <Loading/>
+    </div>
     <canvas ref="canvas" class="canvas"></canvas>
     <div class="shell">
       <div
@@ -124,6 +140,7 @@ import { traits } from './data/traits'
 import { unique, flatten } from '../utils/array'
 import IconHexagon from '../components/hexagon.vue'
 import { convexHull, calcPolygonArea } from '../utils/geo/geo'
+import Loading from '../components/loading.vue'
 
 const COST_COLORS = [
   '',
@@ -161,6 +178,7 @@ async function loadImage($img: HTMLImageElement, src: string) {
 @Component({
   components: {
     IconHexagon,
+    Loading,
   }
 })
 export default class Index extends Vue {
@@ -171,6 +189,7 @@ export default class Index extends Vue {
   $graph!: NetworkGraph
   selectedCombinations: Combination[] = []
   traits: string[] = []
+  isLoading: boolean = false
 
   costColors = COST_COLORS
   get combinations(): Combination[] {
@@ -189,6 +208,7 @@ export default class Index extends Vue {
   }
 
   async mounted() {
+    this.isLoading = true
     const nodes = await Promise.all(champions.map(async champion => {
       return {
         id: champion.championId,
@@ -197,6 +217,7 @@ export default class Index extends Vue {
         $image: await loadImage(new Image(), `./champions/${champion.championId}.png`)
       } as Node
     }))
+    this.isLoading = false
 
     this.traits = unique(flatten<string>(nodes.map(champion => champion.traits)))
 
