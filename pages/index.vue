@@ -47,7 +47,7 @@
       }
     }
   }
-  
+
   .modal {
     position: fixed;
     left: 0px;
@@ -97,6 +97,10 @@
     </div>
     <canvas ref="canvas" class="canvas"></canvas>
     <div class="shell">
+      <div class="trajactory result">
+        <div class="name">name</div>
+        <div class="area">area</div>
+      </div>
       <div
         v-for="(trajactory, index) in trajactories"
         :key="index"
