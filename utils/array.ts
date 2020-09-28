@@ -22,3 +22,18 @@ export function flatten<T>(array: any[]): T[] {
   }
   return result
 }
+
+export function min(array: number[]) {
+  return Math.min(...array)
+}
+
+export function max(array: number[]) {
+  return Math.max(...array)
+}
+
+export function extent(array: number[]) {
+  return {
+    min: min(array),
+    max: max(array),
+  }
+}

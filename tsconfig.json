@@ -24,7 +24,9 @@
       ]
     },
     "types": [
-      "@nuxt/types"
+      "@nuxt/types",
+      "@types/jest",
+      "node"
     ]
   }
 }

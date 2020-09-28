@@ -1,7 +1,5 @@
 import d3, {
   Simulation,
-  SimulationNodeDatum,
-  SimulationLinkDatum,
   forceSimulation,
   forceManyBody,
   ForceCenter,
@@ -14,9 +12,12 @@ import d3, {
   zoomIdentity,
   select,
   contourDensity,
+  text,
 } from 'd3'
 import EventEmitter from 'eventemitter3'
 import { unique, flatten } from '../utils/array'
+import { convexHull, calcPolygonArea } from '../utils/geo/geo'
+import { Edge, Node, Point, Trajactory } from './types'
 
 const PI_2 = Math.PI * 2
 const ZOOM_MAX = 2
@@ -34,10 +35,10 @@ function drawEdge(ctx: CanvasRenderingContext2D, source: Point, target: Point, c
   if (label) {
     ctx.font = '4px Arial'
     const x = Math.min(source.x, target.x) + Math.abs(source.x - target.x) / 2
-    const y = Math.min(source.y, target.y) + Math.abs(source.y - target.y) / 4
+    const y = Math.min(source.y, target.y) + Math.abs(source.y - target.y) / 2
 
     ctx.translate(x, y)
-    ctx.rotate(Math.atan2(source.y - target.y, source.x - target.x ))
+    ctx.rotate(Math.atan2(source.y - target.y, source.x - target.x))
     ctx.textAlign = 'center'
     ctx.fillText(label, 0, 12)
     // ctx.fillText(label, , )
@@ -46,13 +47,32 @@ function drawEdge(ctx: CanvasRenderingContext2D, source: Point, target: Point, c
   ctx.restore()
 }
 
-function drawNode(ctx: CanvasRenderingContext2D, node: Node) {
-  const image = new Image()
-  image.src = `./champions/${node.championId}.png`
+function drawPolygon(ctx: CanvasRenderingContext2D, nodes: Node[], color?: string, alpha?: number) {
+  ctx.save()
+  ctx.beginPath()
+  const first = nodes.find(node => true)
 
-  // ctx.moveTo(node.x ?? 0, node.y ?? 0)
-  const size = 40
-  ctx.drawImage(image, (node.x ?? 0) - size / 2, (node.y ?? 0) - size / 2, size, size)
+  const center = {
+    x: nodes.reduce((sum, node) => sum + (node.x ?? 0), 0) / nodes.length,
+    y: nodes.reduce((sum, node) => sum + (node.y ?? 0), 0) / nodes.length,
+  }
+
+  // const area = calcPolygonArea(nodes.map(node => ({ x: node.x ?? 0, y: node.y ?? 0 })))
+  // const { width: textWidth } = ctx.measureText(`${Math.round(area)}`)
+  // ctx.fillStyle = '#000'
+  // ctx.fillText(`${Math.round(area)}`, center.x - textWidth / 2, center.y)
+  ctx.moveTo(first?.x ?? 0, first?.y ?? 0)
+  for (const node of nodes) {
+    ctx.lineTo(node?.x ?? 0, node?.y ?? 0)
+  }
+  ctx.lineTo(first?.x ?? 0, first?.y ?? 0)
+  ctx.closePath()
+
+  ctx.fillStyle = color ?? '#000'
+  ctx.globalAlpha = alpha ?? 0.05
+  ctx.fill()
+  ctx.globalAlpha = 1
+  ctx.restore()
 }
 
 function drawHexagonImage(ctx: CanvasRenderingContext2D, node: Node, size: number, alpha?: number) {
@@ -103,29 +123,6 @@ function isString(object: any) {
   return typeof object === 'string'
 }
 
-export interface Point {
-  x: number
-  y: number
-}
-
-export interface Node extends SimulationNodeDatum {
-  id: string
-  name: string
-  championId: string
-  cost: number
-  traits: string[]
-  color: string
-  blur?: boolean
-  focus?: boolean
-  $image?: HTMLImageElement
-  emphasize?: boolean
-}
-
-export interface Edge extends SimulationLinkDatum<Node> {
-  source: string | Node
-  target: string | Node
-}
-
 export class NetworkGraph extends EventEmitter {
   nodes: Node[]
   edges: Edge[]
@@ -134,6 +131,7 @@ export class NetworkGraph extends EventEmitter {
   height: number
 
   fixNodes: Node[] | null = null
+  trajactories: Trajactory[] = []
 
   $forceCenter: ForceCenter<Node>
   $forceLink: ForceLink<Node, Edge>
@@ -175,6 +173,16 @@ export class NetworkGraph extends EventEmitter {
       return this.onZoom(transform)
     }))
     this.$transform = zoomIdentity
+  }
+
+  addTrajactory(trajactory: Trajactory) {
+    this.trajactories.push(trajactory)
+    this.onTick()
+  }
+
+  clearTrajactory() {
+    this.trajactories = []
+    this.onTick()
   }
 
   setFixNodes(nodes: Node[]) {
@@ -271,7 +279,7 @@ export class NetworkGraph extends EventEmitter {
     $ctx.translate(this.$transform.x, this.$transform.y)
     $ctx.scale(this.$transform.k, this.$transform.k)
 
-    const emphasizedNodes = this.$simulator.nodes().filter(node => node.emphasize)
+    const emphasizedNodes = this.trajactories.length === 0 ? this.$simulator.nodes().filter(node => node.emphasize) : []
 
     for (const link of this.$forceLink.links()) {
       if (!isString(link)) {
@@ -369,13 +377,23 @@ export class NetworkGraph extends EventEmitter {
           if (emphasizedNodes.find(_node => _node === node)) {
             drawHexagonImage($ctx, node, HEXAGON_SIZE, 1)
           } else {
-            drawHexagonImage($ctx, node, HEXAGON_SIZE, 0.005)
+            drawHexagonImage($ctx, node, HEXAGON_SIZE, 0.05)
           }
         }
       } else {
         drawHexagonImage($ctx, node, HEXAGON_SIZE, 1)
       }
     }
+
+    for (const trajactory of this.trajactories) {
+      const filtered = convexHull(trajactory.points.map(node => ({
+        ...node,
+        x: node.x ?? 0,
+        y: node.y ?? 0,
+      }))) as Node[]
+      drawPolygon($ctx, filtered, trajactory.color, 0.5)
+    }
+
     $ctx.restore()
   }
 }
