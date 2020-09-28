@@ -17,5 +17,6 @@ module.exports = {
       }
     }
   },
-  buildModules: ['@nuxt/typescript-build']
+  buildModules: ['@nuxt/typescript-build'],
+  plugins: [{ src: './plugins/ga.js', mode: 'client' }]
 }
