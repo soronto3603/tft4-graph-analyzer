@@ -46,7 +46,7 @@ import { combinationPredictor, stringifyCombinationTrait } from '../utils/tft4/c
 import d3, { Selection, select, chord, descending, arc, ribbon, zoom, event, ZoomTransform, zoomIdentity } from 'd3'
 
 @Component
-export default class Index extends Vue {
+export default class CombinationAnalyzer extends Vue {
   $refs!: {
     canvas: HTMLCanvasElement,
     svg: SVGElement,

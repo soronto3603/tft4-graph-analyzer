@@ -185,7 +185,7 @@ async function loadImage($img: HTMLImageElement, src: string) {
     Loading,
   }
 })
-export default class Index extends Vue {
+export default class GraphAnalyzer extends Vue {
   $refs!: {
     canvas: HTMLCanvasElement,
   }
